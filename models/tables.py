@@ -14,16 +14,16 @@ db.define_table('pagetable' # Name 'page' is reserved unfortunately.
 
 db.define_table('revision',
     # Complete!
-    Field('body', 'text'), # This is the main content of a revision.
+    Field('page_ref', db.pagetable),
+    Field('author', db.auth_user),
+    Field('time', 'datetime'),
+    Field('content', 'text')
     )
 
 db.define_table('testpage',
     # This table is used for testing only.  Don't use it in your code,
     # but feel free to look at how I use it. 
     Field('body', 'text'),
-    Field('author', 'text'),
-    Field('datetime'),
-    Field('content', 'text')
     )
 
 def create_wiki_links(s):
