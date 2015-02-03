@@ -12,23 +12,56 @@ def index():
     like that. 
     """
     title = request.args(0) or 'main page'
-    # You have to serve to the user the most recent revision of the 
-    # page with title equal to title.
-    page_id = db(db.pagetable.title == title).select().first()
+
     # Let's uppernice the title.  The last 'title()' below
     # is actually a Python function, if you are wondering.
     display_title = title.title()
-    editing = request.vars.edit == 'true'
+
+    # You have to serve to the user the most recent revision of the 
+    # page with title equal to title.
+    page_id = db(db.pagetable.title == title).select().first()
+
     rev = db(db.revision.ref_id == page_id).select(orderby=~db.revision.date_created).first()
 
     s = rev.body if rev is not None else ''
+
+    editing = request.vars.edit == 'y'
+
+    if editing:
+        # We are editing.  Gets the body s of the page.
+        # Creates a form to edit the content s, with s as default.
+        form = SQLFORM.factory(Field('body', 'text',
+                                     label='Content',
+                                     default=s
+                                     ))
+        # You can easily add extra buttons to forms.
+        form.add_button('Cancel', URL('default', 'index', args=[title]))
+        # Processes the form.
+        if form.process().accepted:
+            # Writes the new content.
+            if rev is None:
+                # First time: we need to insert it.
+                db.pagetable.insert(id=1, title=title)
+                db.revision.insert(id=1, body=form.vars.body)
+            else:
+                # We update it.
+                rev.update_record(body=form.vars.body)
+            # We redirect here, so we get this page with GET rather than POST,
+            # and we go out of edit mode.
+            redirect(URL('default', 'index'))
+        content = form
+    else:
+        # We are just displaying the page
+        content = s
+
     # Here, I am faking it.  
     # Produce the content from real database data. 
     button = A('edit', _class='btn', _href=URL('default', 'index', args=[title], vars=dict(edit='y')))
-    content = represent_wiki(s)
+    #content_w = represent_wiki(content)
     return dict(display_title = display_title,
                 button = button,
-                content = content
+                content = content,
+                editing=editing
                 )
 
 
