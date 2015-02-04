@@ -5,23 +5,19 @@ import logging
 
 
 def index():
-    """
-    This is the main page of the wiki.  
-    You will find the title of the requested page in request.args(0).
-    If this is None, then just serve the latest revision of something titled "Main page" or something 
-    like that. 
-    """
-    title = request.args(0) or 'main page'
 
-    # Let's uppernice the title.  The last 'title()' below
-    # is actually a Python function, if you are wondering.
+    title = request.args(0) or 'main page'
     display_title = title.title()
 
-    # You have to serve to the user the most recent revision of the 
-    # page with title equal to title.
-    page_id = db(db.pagetable.title == title).select().first()
+    if title == 'main page':
+        title = 'main_page'
 
-    rev = db(db.revision.ref_id == page_id).select(orderby=~db.revision.date_created).first()
+    if db(db.pagetable.title == title).select().first() is None:
+        redirect(URL('default', 'new', args=[title]))
+
+    page_id = db(db.pagetable.title == title).select().first().id
+
+    rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created).first()
 
     s = rev.body if rev is not None else ''
 
@@ -41,14 +37,14 @@ def index():
             # Writes the new content.
             if rev is None:
                 # First time: we need to insert it.
-                db.pagetable.insert(id=1, title=title)
-                db.revision.insert(id=1, body=form.vars.body)
+                db.pagetable.insert(title=title)
+                db.revision.insert(author = db.auth_user, body=form.vars.body, pagetable_id = page_id)
             else:
                 # We update it.
                 rev.update_record(body=form.vars.body)
             # We redirect here, so we get this page with GET rather than POST,
             # and we go out of edit mode.
-            redirect(URL('default', 'index'))
+            redirect(URL('default', 'index', args=[title]))
         content = form
     else:
         # We are just displaying the page
@@ -57,13 +53,36 @@ def index():
     # Here, I am faking it.  
     # Produce the content from real database data. 
     button = A('edit', _class='btn', _href=URL('default', 'index', args=[title], vars=dict(edit='y')))
-    #content_w = represent_wiki(content)
+
     return dict(display_title = display_title,
-                button = button,
+                button  = button,
                 content = content,
-                editing=editing
+                editing = editing
                 )
 
+def new():
+    new_page = request.args(0)
+    content = 'Would you like to create the page for %s?' % (new_page)
+    create_button = A('Create page', _class='btn', _href=URL('default', 'create', args=[new_page]))
+    cancel_button = A('Cancel', _class='btn', _href=URL('default', 'index'))
+    return dict(content = content,
+                create_button = create_button,
+                cancel_button = cancel_button,
+                new_page = new_page
+                )
+
+def create():
+    page_name = request.args(0)
+    form = SQLFORM.factory(Field('body', 'text',
+                                  label='Content'
+                                ))
+    form.add_button('Cancel', URL('default', 'index'))
+    if form.process().accepted:
+        db.pagetable.insert(title=page_name)
+        page_id = db(db.pagetable.title == page_name).select().first().id 
+        db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
+        redirect(URL('default', 'index', args=[page_name]))
+    return dict(form = form, page_name = page_name)
 
 def test():
     """This controller is here for testing purposes only.

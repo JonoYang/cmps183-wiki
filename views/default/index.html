@@ -11,7 +11,9 @@ label#no_table_body__label { display: none; }
 <h1>
 	{{=display_title}}
 	<div align="right">
+	    {{if not editing:}}
 	    {{=button}}
+	    {{pass}}
 	</div>
 </h1>
 
