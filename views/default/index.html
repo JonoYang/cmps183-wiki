@@ -3,9 +3,9 @@
 
 {{block head}}
 <!-- This hides the "content" label of the form. -->
-<style>
-label#no_table_body__label { display: none; }
-</style>
+    <style>
+        label#no_table_body__label { display: none; }
+    </style>
 {{end}}
 
 <h1>
@@ -18,10 +18,13 @@ label#no_table_body__label { display: none; }
 </h1>
 
 {{if editing:}}
-{{=content}}
+    {{=content}}
 {{else:}}
-{{=represent_wiki(content)}}
+    {{=represent_wiki(content)}}
 {{pass}}
 
+<p>
+    {{=A('Return to Main', _class='btn', _href=URL('default', 'index'))}}
+</p>
 <!-- You need to put here buttons to see the revision history (to implement later),
 and to edit (to implement now). -->
