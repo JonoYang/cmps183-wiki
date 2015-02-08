@@ -13,9 +13,9 @@ db.define_table('pagetable', # Name 'page' is reserved unfortunately.
 
 db.define_table('revision',
     # Complete!
-    Field('ref_id', 'reference pagetable'),
+    Field('pagetable_id', db.pagetable),
     Field('author', db.auth_user),
-    Field('date_created', 'datetime'),
+    Field('date_created', 'datetime', default = datetime.utcnow()),
     Field('body', 'text'), # This is the main content of a revision.
     )
 

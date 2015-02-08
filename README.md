@@ -1,13 +1,8 @@
-# README #
+# SlugWiki #
 
-### About  ###
+SlugWiki is an wiki-like site using web2py. Users should be able to create and view pages. If a page does not exist, the user should be asked if they want to create the page.
 
-This project contains a starting point for creating a simple web2py-powered wiki
+## Notes ##
 
-### Setup ###
-
-Clone this repository as one of your web2py applications.
-
-### For more information ###
-
-Talk to luca@ucsc.edu
+ - Initial code was written by Luca de Alfaro (luca@ucsc.edu). 
+ - High level collaboration was done with Alexander Nguyen.

@@ -5,32 +5,67 @@ import logging
 
 
 def index():
-    """
-    This is the main page of the wiki.  
-    You will find the title of the requested page in request.args(0).
-    If this is None, then just serve the latest revision of something titled "Main page" or something 
-    like that. 
-    """
-    title = request.args(0) or 'main page'
-    # You have to serve to the user the most recent revision of the 
-    # page with title equal to title.
-    page_id = db(db.pagetable.title == title).select().first()
-    # Let's uppernice the title.  The last 'title()' below
-    # is actually a Python function, if you are wondering.
-    display_title = title.title()
-    editing = request.vars.edit == 'true'
-    rev = db(db.revision.ref_id == page_id).select(orderby=~db.revision.date_created).first()
 
-    s = rev.body if rev is not None else ''
-    # Here, I am faking it.  
-    # Produce the content from real database data. 
+    title = request.args(0) or 'Main'
+    title = title.lower()
+    display_title = title.title()
+
+    if db(db.pagetable.title == title).select().first() is None:
+        redirect(URL('default', 'new', args=[title]))
+
+    page_id = db(db.pagetable.title == title).select().first().id
+
+    rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created).first()
+    s = rev.body
+
+    editing = request.vars.edit == 'y'
+
+    if editing:
+        form = SQLFORM.factory(Field('body', 'text',
+                                     label='Content',
+                                     default=s
+                                     ))
+        form.add_button('Cancel', URL('default', 'index', args=[title]))
+
+        if form.process().accepted:
+            rev.update_record(body=form.vars.body)
+            redirect(URL('default', 'index', args=[title]))
+
+        content = form
+    else:
+        content = s
+
     button = A('edit', _class='btn', _href=URL('default', 'index', args=[title], vars=dict(edit='y')))
-    content = represent_wiki(s)
+
     return dict(display_title = display_title,
-                button = button,
-                content = content
+                button  = button,
+                content = content,
+                editing = editing
                 )
 
+def new():
+    title = request.args(0)
+    content = 'Would you like to create the page for %s?' % (title)
+    create_button = A('Create page', _class='btn', _href=URL('default', 'create', args=[title]))
+    cancel_button = A('Cancel', _class='btn', _href=URL('default', 'index'))
+    return dict(content = content,
+                create_button = create_button,
+                cancel_button = cancel_button,
+                title = title
+                )
+
+def create():
+    title = request.args(0)
+    form = SQLFORM.factory(Field('body', 'text',
+                                  label='Content'
+                                ))
+    form.add_button('Cancel', URL('default', 'index'))
+    if form.process().accepted:
+        db.pagetable.insert(title=title)
+        page_id = db(db.pagetable.title == title).select().first().id 
+        db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
+        redirect(URL('default', 'index', args=[title]))
+    return dict(form = form, title = title)
 
 def test():
     """This controller is here for testing purposes only.
