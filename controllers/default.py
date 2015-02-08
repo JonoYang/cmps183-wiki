@@ -14,16 +14,22 @@ def index():
     title = request.args(0) or 'main page'
     # You have to serve to the user the most recent revision of the 
     # page with title equal to title.
-    
+    page_id = db(db.pagetable.title == title).select().first()
     # Let's uppernice the title.  The last 'title()' below
     # is actually a Python function, if you are wondering.
     display_title = title.title()
+    editing = request.vars.edit == 'true'
+    rev = db(db.revision.ref_id == page_id).select(orderby=~db.revision.date_created).first()
 
-    
+    s = rev.body if rev is not None else ''
     # Here, I am faking it.  
     # Produce the content from real database data. 
-    content = represent_wiki("I like <<Panda>>s")
-    return dict(display_title=display_title, content=content)
+    button = A('edit', _class='btn', _href=URL('default', 'index', args=[title], vars=dict(edit='y')))
+    content = represent_wiki(s)
+    return dict(display_title = display_title,
+                button = button,
+                content = content
+                )
 
 
 def test():

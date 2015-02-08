@@ -6,18 +6,17 @@ import unittest
 # Format for wiki links.
 RE_LINKS = re.compile('(<<)(.*?)(>>)')
 
-db.define_table('pagetable' # Name 'page' is reserved unfortunately.
+db.define_table('pagetable', # Name 'page' is reserved unfortunately.
     # Complete!
-    Field('title')
+    Field('title', 'text'),
     )
-
 
 db.define_table('revision',
     # Complete!
-    Field('page_ref', db.pagetable),
+    Field('ref_id', 'reference pagetable'),
     Field('author', db.auth_user),
-    Field('time', 'datetime'),
-    Field('content', 'text')
+    Field('date_created', 'datetime'),
+    Field('body', 'text'), # This is the main content of a revision.
     )
 
 db.define_table('testpage',

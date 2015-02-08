@@ -1,7 +1,13 @@
 {{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
 {{extend 'layout.html'}}
 
-<h1>{{=display_title}}</h1>
+<h1>
+	{{=display_title}}
+	<div align="right">
+	    {{=button}}
+	</div>
+</h1>
+
 
 {{=content}}
 
