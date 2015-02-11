@@ -1,0 +1,13 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}}
+
+<h1> Revision history for {{=title}}</h1>
+
+<ul>
+{{for r in rev:}}
+
+	<li>
+	Revision by {{=r.author}}, posted on {{=r.date_created}}
+	</li>
+{{pass}}
+</ul>
