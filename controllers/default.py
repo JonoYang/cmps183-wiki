@@ -25,6 +25,7 @@ def index():
                                      label='Content',
                                      default=s
                                      ))
+        form.add_button('History', URL('default', 'history', args=[title]))
         form.add_button('Cancel', URL('default', 'index', args=[title]))
 
         if form.process().accepted:
@@ -66,6 +67,12 @@ def create():
         db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
         redirect(URL('default', 'index', args=[title]))
     return dict(form = form, title = title)
+
+def history():
+    title = request.args(0)
+    page_id = db(db.pagetable.title == title).select().first().id
+    rev = db(db.revision.pagetable_id == page_id).select(db.revision.ALL)
+    return dict(title = title, rev = rev)
 
 def test():
     """This controller is here for testing purposes only.
