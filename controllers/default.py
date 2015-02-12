@@ -71,16 +71,12 @@ def create():
 def history():
     title = request.args(0)
     page_id = db(db.pagetable.title == title).select().first().id
-
-    #rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created).first()
-    #s = rev.body
-
     rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created)
     return dict(title = title, rev = rev)
 
 def revision():
     title = request.args(0)
-    date_created = reqest.args(1)
+    rev_id = reqest.args(1)
     page_id = db(db.pagetable.title == title).select().first().id
     rev = db(db.revision.pagetable_id == page_id).select(db.revision.date_created == date_created)
 
