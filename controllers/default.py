@@ -70,8 +70,8 @@ def create():
 
 def history():
     title = request.args(0)
-    page_id = db(db.pagetable.title == title).select().first().id
-    rev = db(db.revision.pagetable_id == page_id).select(db.revision.ALL)
+    
+    rev = db(db.revision).select(db.revision.ALL)
     return dict(title = title, rev = rev)
 
 def test():
