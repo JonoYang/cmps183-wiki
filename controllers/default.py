@@ -78,6 +78,14 @@ def history():
     rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created)
     return dict(title = title, rev = rev)
 
+def revision():
+    title = request.args(0)
+    date_created = reqest.args(1)
+    page_id = db(db.pagetable.title == title).select().first().id
+    rev = db(db.revision.pagetable_id == page_id).select(db.revision.date_created == date_created)
+
+    return dict(title = title, rev = rev)
+
 def test():
     """This controller is here for testing purposes only.
     Feel free to leave it in, but don't make it part of your wiki.

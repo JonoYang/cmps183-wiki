@@ -1,7 +1,10 @@
 # coding: utf8
 from datetime import datetime
+from gluon import *
 import re
 import unittest
+
+def ip(): return current.request.client
 
 # Format for wiki links.
 RE_LINKS = re.compile('(<<)(.*?)(>>)')
@@ -15,6 +18,7 @@ db.define_table('revision',
     # Complete!
     Field('pagetable_id', db.pagetable),
     Field('author', db.auth_user),
+    Field('author_ip', default = ip()),
     Field('date_created', 'datetime', default = datetime.utcnow()),
     Field('body', 'text'), # This is the main content of a revision.
     )
@@ -24,6 +28,7 @@ db.define_table('testpage',
     # but feel free to look at how I use it. 
     Field('body', 'text'),
     )
+
 
 def create_wiki_links(s):
     """This function replaces occurrences of '<<polar bear>>' in the 
