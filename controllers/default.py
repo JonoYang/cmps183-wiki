@@ -29,7 +29,7 @@ def index():
         form.add_button('Cancel', URL('default', 'index', args=[title]))
 
         if form.process().accepted:
-            rev.update_record(body=form.vars.body)
+            db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
             redirect(URL('default', 'index', args=[title]))
 
         content = form
@@ -70,8 +70,12 @@ def create():
 
 def history():
     title = request.args(0)
-    
-    rev = db(db.revision).select(db.revision.ALL)
+    page_id = db(db.pagetable.title == title).select().first().id
+
+    #rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created).first()
+    #s = rev.body
+
+    rev = db(db.revision.pagetable_id == page_id).select(orderby=~db.revision.date_created)
     return dict(title = title, rev = rev)
 
 def test():
