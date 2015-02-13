@@ -1,12 +1,22 @@
 {{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
 {{extend 'layout.html'}}
 
-<h1> Revision history for {{=title}}</h1>
+<h1> Revision history for {{=title.title()}}</h1>
 
 <ul>
 {{for r in rev:}}
 	<li>
-	Revision by {{=r.author}} ({{=r.author_ip}}), posted on {{=A(r.date_created, _href=URL('view', 'revision', args=[r.id]))}}
+	{{if r.author is None:}}
+	    Revision by {{=r.author_ip}}, posted on {{=r.date_created}}
+	{{else:}}
+	    Revision by {{='%s %s' % (r.author.first_name, r.author.last_name)}},
+	    posted on {{=r.date_created}}
+	{{pass}}
+	{{=A('Revert to this revision', _class='btn', _href=URL('default', 'history', args=[title, r.id], vars=dict(rev='y')))}}
 	</li>
 {{pass}}
 </ul>
+
+<p>
+	{{=A('Return to article', _class='btn', _href=URL('default', 'index', args=[title]))}}
+</p>
