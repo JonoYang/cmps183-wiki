@@ -21,7 +21,8 @@ def index():
     editing = request.vars.edit == 'y'
 
     if editing:
-        form = SQLFORM.factory(Field('body', 'text',
+        form = SQLFORM.factory(Field('edit_comment', label = 'Reason for edit'),
+                                Field('body', 'text',
                                      label='Content',
                                      default=s
                                      ))
@@ -29,7 +30,7 @@ def index():
         form.add_button('Cancel', URL('default', 'index', args=[title]))
 
         if form.process().accepted:
-            db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
+            db.revision.insert(author = auth.user_id, body=form.vars.body, edit_comment = form.vars.edit_comment, pagetable_id = page_id)
             redirect(URL('default', 'index', args=[title]))
 
         content = form
@@ -64,7 +65,7 @@ def create():
     if form.process().accepted:
         db.pagetable.insert(title=title)
         page_id = db(db.pagetable.title == title).select().first().id 
-        db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
+        db.revision.insert(author = auth.user_id, body=form.vars.body, edit_comment = 'Initial entry', pagetable_id = page_id)
         redirect(URL('default', 'index', args=[title]))
     return dict(form = form, title = title)
 
@@ -78,30 +79,10 @@ def history():
     if revising:
         rev_id = request.args(1)
         rev = db(db.revision.id == rev_id).select().first()
-        db.revision.insert(author = auth.user_id, body=rev.body, pagetable_id = page_id)
+        db.revision.insert(author = auth.user_id, body=rev.body, edit_comment = 'Revert to %s UTC' % (rev.date_created), pagetable_id = page_id)
         redirect(URL('default', 'index', args=[title]))
 
     return dict(title = title, rev = rev)
-
-def revision():
-    title = request.args(0)
-    rev_id = request.args(1)
-    page_id = db(db.pagetable.title == title).select().first().id
-    rev = db(db.revision.id == rev_id).select().first()
-    s = rev.body
-
-    form = SQLFORM.factory(Field('body', 'text',
-                                label='Content',
-                                default=s
-                                ))
-    form.add_button('History', URL('default', 'history', args=[title]))
-    form.add_button('Cancel', URL('default', 'index', args=[title]))
-
-    if form.process().accepted:
-        db.revision.insert(author = auth.user_id, body=form.vars.body, pagetable_id = page_id)
-        redirect(URL('default', 'index', args=[title]))
-
-    return dict(title = title, form = form)
 
 def test():
     """This controller is here for testing purposes only.

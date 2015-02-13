@@ -12,7 +12,7 @@
 	    Revision by {{='%s %s' % (r.author.first_name, r.author.last_name)}},
 	    posted on {{=r.date_created}}
 	{{pass}}
-	{{=A('Revert to this revision', _class='btn', _href=URL('default', 'history', args=[title, r.id], vars=dict(rev='y')))}}
+	({{=r.edit_comment}}) {{=A('Revert to this revision', _class='btn', _href=URL('default', 'history', args=[title, r.id], vars=dict(rev='y')))}}
 	</li>
 {{pass}}
 </ul>
